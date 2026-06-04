@@ -7,6 +7,7 @@ import '../app/strings.dart';
 import '../sudoku_engine.dart';
 import 'custom_puzzle_screen.dart';
 import 'game_screen.dart';
+import 'scan_puzzle_screen.dart';
 import 'stats_screen.dart';
 import 'tutorial_screen.dart';
 
@@ -113,22 +114,42 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
                   ..._buildDifficultyButtons(context, s),
                   const SizedBox(height: 4),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.edit_note),
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => CustomPuzzleScreen(
-                            settings: widget.settings,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.edit_note),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => CustomPuzzleScreen(
+                                settings: widget.settings,
+                              ),
+                            )).then((_) => _refreshSaved());
+                          },
+                          label: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(s.enterCustomPuzzle),
                           ),
-                        )).then((_) => _refreshSaved());
-                      },
-                      label: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Text(s.enterCustomPuzzle),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.document_scanner_outlined),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => ScanPuzzleScreen(
+                                settings: widget.settings,
+                              ),
+                            )).then((_) => _refreshSaved());
+                          },
+                          label: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(s.scanPuzzle),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Row(

@@ -118,6 +118,25 @@ class Strings {
       isFa ? 'چند جواب دارد — سرنخ بیشتری اضافه کنید' : 'Multiple solutions — add more clues';
   String get statusValid => isFa ? 'پازل معتبر است' : 'Puzzle is valid';
   String get checking => isFa ? 'در حال بررسی…' : 'Checking…';
+
+  // ---- Scan puzzle ----
+  String get scanPuzzle => isFa ? 'اسکن از دوربین' : 'Scan from camera';
+  String get scanIntro => isFa
+      ? 'یک عکس واضح از پازل بگیر یا از گالری انتخاب کن. خط‌های شبکه باید '
+        'به‌خوبی دیده بشن و ارقام چاپی باشن (نه دست‌نوشته).'
+      : 'Take a sharp photo of the puzzle, or pick one from your gallery. '
+        'Grid lines should be clearly visible and digits printed (not '
+        'handwritten).';
+  String get takePhoto => isFa ? 'گرفتن عکس' : 'Take photo';
+  String get pickFromGallery => isFa ? 'انتخاب از گالری' : 'Pick from gallery';
+  String get recognizing => isFa ? 'در حال تشخیص…' : 'Recognizing…';
+  String get reviewBeforeStart => isFa
+      ? 'پیش از شروع نتیجه را بررسی و در صورت نیاز اصلاح کنید.'
+      : 'Review the result and fix any wrong digits before starting.';
+  String get ocrFailed => isFa ? 'تشخیص ناموفق بود' : 'Recognition failed';
+  String get ocrLowConfidence => isFa
+      ? 'بعضی خانه‌ها تشخیص داده نشدن — بقیه را دستی پر کن.'
+      : 'Some cells could not be read — fill the rest in manually.';
   String get tutorial => isFa ? 'آموزش تکنیک‌ها' : 'Learn techniques';
   String get tutorialIntro => isFa
       ? 'هر تکنیک یک «قلق» منطقی برای پیشروی در پازل است. اینجا با مثال '

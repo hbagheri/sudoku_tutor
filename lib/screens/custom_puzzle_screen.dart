@@ -14,7 +14,16 @@ import 'game_screen.dart';
 /// the puzzle off to a normal [GameScreen].
 class CustomPuzzleScreen extends StatefulWidget {
   final AppSettings settings;
-  const CustomPuzzleScreen({required this.settings, super.key});
+
+  /// Optional 81-cell digit array (0 = empty). Used to seed the grid from
+  /// OCR. The user can still edit before tapping "Start playing".
+  final List<int>? initialValues;
+
+  const CustomPuzzleScreen({
+    required this.settings,
+    this.initialValues,
+    super.key,
+  });
 
   @override
   State<CustomPuzzleScreen> createState() => _CustomPuzzleScreenState();
@@ -32,6 +41,15 @@ class _CustomPuzzleScreenState extends State<CustomPuzzleScreen> {
   void initState() {
     super.initState();
     _board = Board.empty();
+    final seed = widget.initialValues;
+    if (seed != null && seed.length == 81) {
+      for (var i = 0; i < 81; i++) {
+        if (seed[i] != 0) {
+          _board.at(i ~/ 9, i % 9).value = seed[i];
+        }
+      }
+      _scheduleValidate();
+    }
   }
 
   @override
