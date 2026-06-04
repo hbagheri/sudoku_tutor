@@ -1,5 +1,7 @@
 # Sudoku Tutor · معلم سودوکو
 
+[![CI](https://github.com/hbagheri/sudoku_tutor/actions/workflows/ci.yml/badge.svg)](https://github.com/hbagheri/sudoku_tutor/actions/workflows/ci.yml)
+
 An educational Sudoku game that **teaches you the solving techniques** —
 one logical step at a time — instead of just handing you the answer.
 
