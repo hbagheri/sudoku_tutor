@@ -77,10 +77,47 @@ List<TechniqueExample> buildTechniqueExamples() {
     if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
   }
 
-  // Higher-order techniques (Naked / Hidden Pair · Triple · Quad, X-Wing)
-  // are added without a worked board for now — they need careful setups
-  // that don't fit into a single tutorial slot. The UI shows their
-  // textual description instead.
+  // ---- Naked Pair ----
+  {
+    final b = Board.empty();
+    // Row 0 cols 2..6 filled with 3..7; (1,1)=8 and (2,2)=9 lock 8 and 9 out
+    // of (0,0) and (0,1) via box 0. Those two cells end up sharing exactly
+    // {1, 2}, and the technique strips 1, 2 from (0,7) and (0,8).
+    b.at(0, 2).value = 3;
+    b.at(0, 3).value = 4;
+    b.at(0, 4).value = 5;
+    b.at(0, 5).value = 6;
+    b.at(0, 6).value = 7;
+    b.at(1, 1).value = 8;
+    b.at(2, 2).value = 9;
+    b.recomputeAllCandidates();
+    final t = NakedPair();
+    final h = t.findOne(b);
+    if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
+  }
+
+  // ---- Hidden Pair ----
+  {
+    final b = Board.empty();
+    // Box 0 receives no 1s or 2s, but every box-0 cell *except* (0,0) and
+    // (0,1) gets 1 or 2 blocked from its row or column. The result: in box
+    // 0, digits 1 and 2 can only live in those two cells, so any other
+    // candidates currently in them can be eliminated.
+    b.at(1, 5).value = 1;
+    b.at(1, 6).value = 2;
+    b.at(2, 4).value = 2;
+    b.at(2, 8).value = 1;
+    b.at(3, 2).value = 1;
+    b.at(4, 2).value = 2;
+    b.recomputeAllCandidates();
+    final t = HiddenPair();
+    final h = t.findOne(b);
+    if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
+  }
+
+  // Triples, Quads, and X-Wing need denser board states to demonstrate;
+  // they are documented textually in `allTechniques` for now and surface
+  // their full explanation when the user hits them in a real game.
 
   return list;
 }
