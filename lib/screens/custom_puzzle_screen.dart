@@ -119,7 +119,14 @@ class _CustomPuzzleScreenState extends State<CustomPuzzleScreen> {
       if (count == 0) {
         _status = _Validation.noSolution();
       } else if (count > 1) {
-        _status = _Validation.multipleSolutions();
+        // Multiple solutions are allowed — the player can still start with
+        // whichever solution the solver landed on. Hint checks may reject
+        // a digit that's valid in a *different* solution, but the user has
+        // accepted this trade-off.
+        _status = _Validation.multipleSolutions(
+          solution: solution,
+          clueCount: clues,
+        );
       } else {
         _status = _Validation.valid(solution: solution, clueCount: clues);
       }
@@ -412,7 +419,7 @@ class _StatusBar extends StatelessWidget {
       _ValState.noSolution => (s.statusNoSolution, theme.colorScheme.error,
           Icons.error_outline),
       _ValState.multipleSolutions => (
-          s.statusMultipleSolutions,
+          '${s.statusMultipleSolutions} · ${status.clueCount} ${s.clues}',
           theme.colorScheme.tertiary,
           Icons.warning_amber_outlined,
         ),
@@ -460,13 +467,18 @@ class _Validation {
       const _Validation._(_ValState.invalid, null, 0);
   factory _Validation.noSolution() =>
       const _Validation._(_ValState.noSolution, null, 0);
-  factory _Validation.multipleSolutions() =>
-      const _Validation._(_ValState.multipleSolutions, null, 0);
+  factory _Validation.multipleSolutions({
+    required Board solution,
+    required int clueCount,
+  }) =>
+      _Validation._(_ValState.multipleSolutions, solution, clueCount);
   factory _Validation.valid({
     required Board solution,
     required int clueCount,
   }) =>
       _Validation._(_ValState.valid, solution, clueCount);
 
-  bool get canStart => state == _ValState.valid && solution != null;
+  bool get canStart =>
+      (state == _ValState.valid || state == _ValState.multipleSolutions) &&
+      solution != null;
 }

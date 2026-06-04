@@ -1,15 +1,16 @@
-import 'dart:math' as math;
-
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
-/// Recognizes digits from a Sudoku photograph by running ML Kit on the
-/// whole image and clustering the result into a 9×9 grid.
+import 'grid_detector.dart';
+
+/// Recognizes digits from a Sudoku photograph using ML Kit.
 ///
-/// We do NOT try to crop/deskew the grid first — for typical newspaper
-/// or magazine photos the digits are already legible, and ML Kit returns
-/// a bounding box for each. Once we have the boxes, we cluster their
-/// centroids into 9 rows and 9 columns based on horizontal and vertical
-/// position.
+/// Two modes:
+///  * [recognizeSudoku] — runs OCR on the whole image and clusters the
+///    detected digits into a 9×9 grid using their bounding-box extent.
+///    Used when grid-line detection didn't work.
+///  * [recognizeWithGrid] — uses pre-detected [GridLines] to assign each
+///    detected digit to the cell it physically falls inside, which is
+///    far more robust than clustering on sparse rows.
 class OcrService {
   final TextRecognizer _recognizer =
       TextRecognizer(script: TextRecognitionScript.latin);
@@ -26,6 +27,47 @@ class OcrService {
       );
     }
     return _clusterIntoGrid(digits);
+  }
+
+  /// Runs OCR on [imagePath] and uses [grid] to place each digit into the
+  /// cell whose bounds enclose the digit's centroid. [grid] must be
+  /// detected against a downscaled copy of the same image (the same one
+  /// [GridDetector] worked on); we rescale OCR centroids to match.
+  ///
+  /// Returns the recognised digits as a list of detections so the preview
+  /// screen can draw them at their true positions.
+  Future<GridOcrResult> recognizeWithGrid({
+    required String imagePath,
+    required GridLines grid,
+    required int sourceImageWidth,
+    required int sourceImageHeight,
+  }) async {
+    final input = InputImage.fromFilePath(imagePath);
+    final result = await _recognizer.processImage(input);
+    final digits = _collectDigitElements(result);
+
+    // ML Kit's coordinates are in the source image's resolution. Convert
+    // them to the grid's downscaled coordinate space.
+    final sx = grid.imageWidth / sourceImageWidth;
+    final sy = grid.imageHeight / sourceImageHeight;
+
+    final cells = List<int>.filled(81, 0);
+    final placed = <PlacedDigit>[];
+    for (final d in digits) {
+      final px = d.cx * sx;
+      final py = d.cy * sy;
+      final (r, c) = grid.cellOf(px, py);
+      final idx = r * 9 + c;
+      if (cells[idx] == 0) {
+        cells[idx] = d.value;
+        placed.add(PlacedDigit(row: r, col: c, value: d.value, cx: px, cy: py));
+      }
+    }
+    return GridOcrResult(
+      values: cells,
+      rawDigits: digits.length,
+      placedDigits: placed,
+    );
   }
 
   /// Turn ML Kit's nested Text / Block / Line / Element structure into a
@@ -61,25 +103,49 @@ class OcrService {
     return out;
   }
 
-  /// Sort the digits' centers into 9 rows and 9 columns, then place each
-  /// digit at its (row, col) coordinate. Returns 81-cell array of digits
-  /// (0 for empty cells).
+  /// Place each detected digit at its (row, col) using the bounding box of
+  /// all digits as the grid extent. This is robust to:
+  ///   * the user leaving padding around the grid when cropping, and
+  ///   * sparse rows/columns (a tight pitch derived from real digits
+  ///     beats greedy clustering that can collapse sparse outer rows
+  ///     into their neighbours).
+  ///
+  /// The only assumption is that at least one digit appears in the top
+  /// row, the bottom row, the leftmost column, and the rightmost column
+  /// — which is almost always true for printed sudoku (puzzles typically
+  /// have 25–30 clues spread across the whole grid).
   OcrResult _clusterIntoGrid(List<_Digit> digits) {
-    final rowBands = _kmeansLike(digits.map((d) => d.cy).toList());
-    final colBands = _kmeansLike(digits.map((d) => d.cx).toList());
-    if (rowBands.length != 9 || colBands.length != 9) {
+    if (digits.length < 17) {
       return OcrResult.failure(
-        reason: 'Grid clustering failed '
-            '(${rowBands.length} rows, ${colBands.length} cols)',
+        reason: 'Not enough digits (${digits.length})',
+        rawDigits: digits.length,
+      );
+    }
+    var minX = digits.first.cx, maxX = digits.first.cx;
+    var minY = digits.first.cy, maxY = digits.first.cy;
+    for (final d in digits) {
+      if (d.cx < minX) minX = d.cx;
+      if (d.cx > maxX) maxX = d.cx;
+      if (d.cy < minY) minY = d.cy;
+      if (d.cy > maxY) maxY = d.cy;
+    }
+    // 9 rows → 8 pitches between row centres (and same for cols).
+    final pitchY = (maxY - minY) / 8.0;
+    final pitchX = (maxX - minX) / 8.0;
+    if (pitchY <= 0 || pitchX <= 0) {
+      return OcrResult.failure(
+        reason: 'Digits not spread across the grid',
         rawDigits: digits.length,
       );
     }
 
     final cells = List<int>.filled(81, 0);
     for (final d in digits) {
-      final r = _closestIndex(rowBands, d.cy);
-      final c = _closestIndex(colBands, d.cx);
+      final r = ((d.cy - minY) / pitchY).round().clamp(0, 8);
+      final c = ((d.cx - minX) / pitchX).round().clamp(0, 8);
       final idx = r * 9 + c;
+      // Keep the first reading per cell — duplicates here usually mean
+      // ML Kit returned the same digit twice with slightly shifted boxes.
       if (cells[idx] == 0) {
         cells[idx] = d.value;
       }
@@ -94,72 +160,6 @@ class OcrService {
     }
 
     return OcrResult.success(values: cells, rawDigits: digits.length);
-  }
-
-  /// Simple 1D clustering: sort the values, then greedily merge adjacent
-  /// ones whose gap is smaller than `medianGap × 0.5`. Returns the
-  /// cluster centers in increasing order.
-  ///
-  /// This is a far simpler-than-k-means approach that works well for
-  /// Sudoku layouts where row/column centers are roughly uniformly spaced.
-  List<double> _kmeansLike(List<double> raw) {
-    if (raw.isEmpty) return [];
-    final sorted = [...raw]..sort();
-    // Gather initial micro-clusters by tight merging.
-    final clusters = <List<double>>[[sorted.first]];
-    for (var i = 1; i < sorted.length; i++) {
-      final last = clusters.last.last;
-      // Use a small gap (~6 px) for the first pass.
-      if (sorted[i] - last < 12) {
-        clusters.last.add(sorted[i]);
-      } else {
-        clusters.add([sorted[i]]);
-      }
-    }
-    if (clusters.length < 9) return clusters.map(_avg).toList();
-
-    // We want exactly 9 clusters. If we have more, merge the closest pair
-    // repeatedly until we're at 9.
-    final centers = clusters.map(_avg).toList();
-    final counts = clusters.map((c) => c.length).toList();
-    while (centers.length > 9) {
-      var bestI = 0;
-      var bestGap = double.infinity;
-      for (var i = 0; i < centers.length - 1; i++) {
-        final gap = centers[i + 1] - centers[i];
-        if (gap < bestGap) {
-          bestGap = gap;
-          bestI = i;
-        }
-      }
-      // Merge bestI and bestI+1 (weighted).
-      final cA = centers[bestI];
-      final cB = centers[bestI + 1];
-      final nA = counts[bestI];
-      final nB = counts[bestI + 1];
-      final merged = (cA * nA + cB * nB) / (nA + nB);
-      centers[bestI] = merged;
-      counts[bestI] = nA + nB;
-      centers.removeAt(bestI + 1);
-      counts.removeAt(bestI + 1);
-    }
-    return centers;
-  }
-
-  double _avg(List<double> xs) =>
-      xs.fold(0.0, (a, b) => a + b) / xs.length;
-
-  int _closestIndex(List<double> centers, double value) {
-    var best = 0;
-    var bestD = double.infinity;
-    for (var i = 0; i < centers.length; i++) {
-      final d = (centers[i] - value).abs();
-      if (d < bestD) {
-        bestD = d;
-        best = i;
-      }
-    }
-    return best;
   }
 
   /// Free native resources held by the ML Kit recognizer.
@@ -207,6 +207,40 @@ class OcrResult {
       values?.where((v) => v != 0).length ?? 0;
 }
 
-// Unused right now, but kept handy for diagnostic dumps.
-// ignore: unused_element
-double _hypot(double a, double b) => math.sqrt(a * a + b * b);
+/// A single digit detection with its position in grid-coordinate space
+/// (matching [GridLines.imageWidth]/[GridLines.imageHeight]).
+class PlacedDigit {
+  final int row;
+  final int col;
+  final int value;
+  final double cx;
+  final double cy;
+  const PlacedDigit({
+    required this.row,
+    required this.col,
+    required this.value,
+    required this.cx,
+    required this.cy,
+  });
+}
+
+/// Result of OCR + grid-aware cell assignment.
+class GridOcrResult {
+  /// 81 digits (0 = empty cell), row-major.
+  final List<int> values;
+
+  /// How many raw digit elements ML Kit produced (diagnostic).
+  final int rawDigits;
+
+  /// Where each retained digit was placed, in grid-coordinate space.
+  /// Used by the preview screen to draw markers on top of the photo.
+  final List<PlacedDigit> placedDigits;
+
+  const GridOcrResult({
+    required this.values,
+    required this.rawDigits,
+    required this.placedDigits,
+  });
+
+  int get clueCount => values.where((v) => v != 0).length;
+}

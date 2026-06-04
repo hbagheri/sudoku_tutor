@@ -17,7 +17,8 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "dev.hbagheri.sudoku_tutor"
-    compileSdk = flutter.compileSdkVersion
+    // image_picker + image_cropper transitive AndroidX deps require API 36+.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

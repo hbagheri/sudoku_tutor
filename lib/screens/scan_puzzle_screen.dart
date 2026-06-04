@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../app/ocr_service.dart';
 import '../app/settings.dart';
 import '../app/strings.dart';
-import 'custom_puzzle_screen.dart';
+import 'scan_review_screen.dart';
 
 /// Lets the user pick a photo (or open the camera) and runs ML Kit on it
 /// to recognise the Sudoku digits, then hands the result off to the
@@ -21,17 +21,10 @@ class ScanPuzzleScreen extends StatefulWidget {
 
 class _ScanPuzzleScreenState extends State<ScanPuzzleScreen> {
   final _picker = ImagePicker();
-  final _ocr = OcrService();
   bool _busy = false;
   String? _busyLabel;
   String? _errorText;
   File? _previewImage;
-
-  @override
-  void dispose() {
-    _ocr.dispose();
-    super.dispose();
-  }
 
   Future<void> _pick({required ImageSource source}) async {
     setState(() {
@@ -42,6 +35,7 @@ class _ScanPuzzleScreenState extends State<ScanPuzzleScreen> {
     try {
       final picked = await _picker.pickImage(
         source: source,
+        preferredCameraDevice: CameraDevice.rear,
         maxWidth: 2400,
         maxHeight: 2400,
         imageQuality: 92,
@@ -52,24 +46,37 @@ class _ScanPuzzleScreenState extends State<ScanPuzzleScreen> {
         return;
       }
       if (!mounted) return;
-      setState(() => _previewImage = File(picked.path));
-      final result = await _ocr.recognizeSudoku(picked.path);
-      if (!mounted) return;
-      if (!result.success) {
-        setState(() {
-          _busy = false;
-          _errorText =
-              '${context.strings.ocrFailed}: ${result.failureReason}';
-        });
+      final s = context.strings;
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: picked.path,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: s.cropPuzzle,
+            // Don't lock — many phones photograph a sudoku at an angle, and
+            // a fixed square forces the user to drag the photo behind a
+            // stationary frame instead of just framing the grid.
+            lockAspectRatio: false,
+            initAspectRatio: CropAspectRatioPreset.square,
+            hideBottomControls: false,
+          ),
+        ],
+      );
+      if (cropped == null) {
+        if (!mounted) return;
+        setState(() => _busy = false);
         return;
       }
-      final values = result.values!;
-      // Always send the user to the custom puzzle screen so they can verify
-      // and patch anything that came out wrong.
-      await Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (_) => CustomPuzzleScreen(
+      if (!mounted) return;
+      setState(() {
+        _previewImage = File(cropped.path);
+        _busy = false;
+      });
+      // Hand off to the review screen, which walks the user through grid
+      // detection and OCR stage-by-stage and lets them confirm.
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => ScanReviewScreen(
           settings: widget.settings,
-          initialValues: values,
+          imagePath: cropped.path,
         ),
       ));
     } catch (e) {

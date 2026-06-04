@@ -114,8 +114,9 @@ class Strings {
       isFa ? 'تکراری در سطر، ستون یا مربع' : 'Duplicate in a row/column/box';
   String get statusNoSolution =>
       isFa ? 'این پازل جواب ندارد' : 'No solution exists';
-  String get statusMultipleSolutions =>
-      isFa ? 'چند جواب دارد — سرنخ بیشتری اضافه کنید' : 'Multiple solutions — add more clues';
+  String get statusMultipleSolutions => isFa
+      ? 'چند جواب دارد — می‌تونی شروع کنی یا سرنخ بیشتری اضافه کنی'
+      : 'Multiple solutions — start anyway, or add more clues';
   String get statusValid => isFa ? 'پازل معتبر است' : 'Puzzle is valid';
   String get checking => isFa ? 'در حال بررسی…' : 'Checking…';
 
@@ -123,13 +124,31 @@ class Strings {
   String get scanPuzzle => isFa ? 'اسکن از دوربین' : 'Scan from camera';
   String get scanIntro => isFa
       ? 'یک عکس واضح از پازل بگیر یا از گالری انتخاب کن. خط‌های شبکه باید '
-        'به‌خوبی دیده بشن و ارقام چاپی باشن (نه دست‌نوشته).'
+        'به‌خوبی دیده بشن و ارقام چاپی باشن (نه دست‌نوشته).\n\n'
+        'فعلاً فقط ارقام لاتین (1–9) پشتیبانی می‌شن، نه ۱–۹ فارسی.'
       : 'Take a sharp photo of the puzzle, or pick one from your gallery. '
         'Grid lines should be clearly visible and digits printed (not '
-        'handwritten).';
+        'handwritten).\n\nOnly Western digits (1–9) are supported.';
   String get takePhoto => isFa ? 'گرفتن عکس' : 'Take photo';
   String get pickFromGallery => isFa ? 'انتخاب از گالری' : 'Pick from gallery';
   String get recognizing => isFa ? 'در حال تشخیص…' : 'Recognizing…';
+  String get cropPuzzle => isFa ? 'محدوده پازل را انتخاب کن' : 'Crop to puzzle';
+  String get done => isFa ? 'تأیید' : 'Done';
+  String get detectingHorizontalLines =>
+      isFa ? 'تشخیص خطوط افقی…' : 'Detecting horizontal lines…';
+  String get detectingVerticalLines =>
+      isFa ? 'تشخیص خطوط عمودی…' : 'Detecting vertical lines…';
+  String get recognizingDigits =>
+      isFa ? 'تشخیص ارقام داخل خانه‌ها…' : 'Recognizing digits in cells…';
+  String get gridDetectionFailed => isFa
+      ? 'تشخیص شبکه ممکن نشد. عکس را با کادر تمیزتر/مستقیم‌تر دوباره بگیر.'
+      : 'Could not detect the grid. Retake with a straighter, tighter crop.';
+  String get useThis => isFa ? 'استفاده کن' : 'Use this';
+  String get retake => isFa ? 'دوباره' : 'Retake';
+  String get cluesFound => isFa ? 'سرنخ پیدا شد' : 'clues found';
+  String get tapCellToEdit => isFa
+      ? 'روی هر خانه بزن تا اصلاح کنی'
+      : 'tap a cell to edit';
   String get reviewBeforeStart => isFa
       ? 'پیش از شروع نتیجه را بررسی و در صورت نیاز اصلاح کنید.'
       : 'Review the result and fix any wrong digits before starting.';
@@ -137,6 +156,11 @@ class Strings {
   String get ocrLowConfidence => isFa
       ? 'بعضی خانه‌ها تشخیص داده نشدن — بقیه را دستی پر کن.'
       : 'Some cells could not be read — fill the rest in manually.';
+  String get ocrMaybePersianDigits => isFa
+      ? 'هیچ رقمی پیدا نشد. اگر پازل با ارقام فارسی (۱–۹) چاپ شده، '
+        'فعلاً پشتیبانی نمی‌شه — از پازل با ارقام لاتین (1–9) استفاده کن.'
+      : 'No digits were found. If the puzzle uses Persian/Arabic digits, '
+        'they are not yet supported — use a puzzle with Western digits.';
   String get tutorial => isFa ? 'آموزش تکنیک‌ها' : 'Learn techniques';
   String get tutorialIntro => isFa
       ? 'هر تکنیک یک «قلق» منطقی برای پیشروی در پازل است. اینجا با مثال '

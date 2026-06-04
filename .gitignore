@@ -44,6 +44,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /android/.kotlin/
+/android/build/
 
 # Release-signing config — keep secrets out of git
 /android/key.properties
