@@ -246,6 +246,18 @@ const List<TechniqueInfo> allTechniques = [
         'که محور هر دو را می‌بیند — هر خانه‌ای که هر دو بازو را می‌بیند '
         'نمی‌تواند C باشد.',
   ),
+  TechniqueInfo(
+    id: 'swordfish',
+    nameEn: 'Swordfish',
+    nameFa: 'سوردفیش',
+    difficulty: 11,
+    summaryEn: 'Like X-Wing but on 3 rows whose candidate columns all lie '
+        'within the same 3 columns — those columns lock the digit, so it '
+        'can be removed from those columns in every other row.',
+    summaryFa: 'مانند ایکس-وینگ، ولی روی ۳ سطر که ستون‌های نامزدشان همگی '
+        'در همان ۳ ستون قرار دارند — این ۳ ستون قفل می‌شوند و آن عدد از '
+        'باقی سطرها در آن ستون‌ها حذف می‌شود.',
+  ),
 ];
 
 /// Lightweight metadata for techniques that don't (yet) carry a worked
