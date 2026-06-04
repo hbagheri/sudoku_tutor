@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app/game_controller.dart';
 import '../app/settings.dart';
+import '../app/stats.dart';
 import '../app/strings.dart';
 import '../widgets/number_pad.dart';
 import '../widgets/sudoku_board_view.dart';
@@ -22,6 +23,7 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   bool _solvedDialogShown = false;
+  final _statsRepo = StatsRepository();
 
   @override
   void initState() {
@@ -34,7 +36,13 @@ class _GameScreenState extends State<GameScreen> {
       _solvedDialogShown = true;
       // Defer to the next frame so we don't try to show a dialog while
       // mid-build.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        await _statsRepo.recordCompletion(
+          difficulty: widget.controller.difficulty,
+          seconds: widget.controller.elapsed.inSeconds,
+          mistakes: widget.controller.mistakes,
+        );
         if (!mounted) return;
         _showSolvedDialog();
       });

@@ -6,6 +6,7 @@ import '../app/settings.dart';
 import '../app/strings.dart';
 import '../sudoku_engine.dart';
 import 'game_screen.dart';
+import 'stats_screen.dart';
 import 'tutorial_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -111,20 +112,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
                   ..._buildDifficultyButtons(context, s),
                   const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => const TutorialScreen(),
-                        ));
-                      },
-                      icon: const Icon(Icons.school_outlined),
-                      label: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Text(s.tutorial),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => const TutorialScreen(),
+                            ));
+                          },
+                          icon: const Icon(Icons.school_outlined),
+                          label: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(s.tutorial),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => const StatsScreen(),
+                            ));
+                          },
+                          icon: const Icon(Icons.bar_chart_outlined),
+                          label: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(s.stats),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   if (_checkingSaved)
                     const Padding(

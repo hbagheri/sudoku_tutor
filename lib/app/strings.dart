@@ -82,6 +82,20 @@ class Strings {
       : 'Puzzle solved. Ready for the next one?';
   String get playAgain => isFa ? 'بازی دوباره' : 'Play again';
   String get backToMenu => isFa ? 'بازگشت به منو' : 'Back to menu';
+  String get statsCompleted => isFa ? 'حل‌شده' : 'Completed';
+  String get statsBestTime => isFa ? 'بهترین زمان' : 'Best time';
+  String get statsTotalTime => isFa ? 'مجموع زمان' : 'Total time';
+  String get statsTotalMistakes => isFa ? 'مجموع اشتباهات' : 'Total mistakes';
+  String get statsAvgTime => isFa ? 'میانگین زمان' : 'Avg time';
+  String get statsEmpty => isFa
+      ? 'هنوز پازلی حل نکرده‌اید. یک بازی شروع کنید!'
+      : 'No puzzles solved yet. Start a game!';
+  String get statsReset => isFa ? 'پاک کردن آمار' : 'Reset stats';
+  String get statsResetConfirm => isFa
+      ? 'مطمئنید؟ همه‌ی آمار از بین می‌رود.'
+      : 'Are you sure? All stats will be cleared.';
+  String get cancel => isFa ? 'انصراف' : 'Cancel';
+  String get yes => isFa ? 'بله' : 'Yes';
   String get tutorial => isFa ? 'آموزش تکنیک‌ها' : 'Learn techniques';
   String get tutorialIntro => isFa
       ? 'هر تکنیک یک «قلق» منطقی برای پیشروی در پازل است. اینجا با مثال '
