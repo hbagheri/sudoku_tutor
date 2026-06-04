@@ -258,6 +258,18 @@ const List<TechniqueInfo> allTechniques = [
         'در همان ۳ ستون قرار دارند — این ۳ ستون قفل می‌شوند و آن عدد از '
         'باقی سطرها در آن ستون‌ها حذف می‌شود.',
   ),
+  TechniqueInfo(
+    id: 'unique_rectangle',
+    nameEn: 'Unique Rectangle',
+    nameFa: 'مستطیل یکتا',
+    difficulty: 12,
+    summaryEn: 'Sudoku has a unique solution, so a "deadly rectangle" of '
+        'four corners in two boxes carrying only {A,B} is impossible. If '
+        'three corners look like that, the fourth must use its extras.',
+    summaryFa: 'سودوکو یک جواب یکتا دارد، پس «مستطیل مرگبار» چهار گوشه '
+        'با {A،B} در دو مربع ممکن نیست. اگر سه گوشه چنین باشند، گوشه‌ی '
+        'چهارم باید گزینه‌های اضافی‌اش را بگیرد.',
+  ),
 ];
 
 /// Lightweight metadata for techniques that don't (yet) carry a worked
