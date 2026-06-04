@@ -10,8 +10,8 @@ void main() {
       final original = SavedGame(
         difficulty: Difficulty.medium,
         solutionCompact: '5' * 81,
-        givensCompact: '1' + '0' * 80,
-        valuesCompact: '17' + '0' * 79,
+        givensCompact: '1${'0' * 80}',
+        valuesCompact: '17${'0' * 79}',
         candidates: [
           for (var i = 0; i < 81; i++)
             if (i == 5) [1, 2, 3] else <int>[]

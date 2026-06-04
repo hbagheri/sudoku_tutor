@@ -76,6 +76,12 @@ class Strings {
   String get noHintsLeft => isFa ? 'تکنیکی پیدا نشد' : 'No technique applies';
   String get pickDifficulty =>
       isFa ? 'یک سطح را انتخاب کنید' : 'Pick a difficulty';
+  String get congrats => isFa ? 'آفرین!' : 'Well done!';
+  String get solvedMessage => isFa
+      ? 'پازل را حل کردی. آماده‌ی پازل بعدی هستی؟'
+      : 'Puzzle solved. Ready for the next one?';
+  String get playAgain => isFa ? 'بازی دوباره' : 'Play again';
+  String get backToMenu => isFa ? 'بازگشت به منو' : 'Back to menu';
   String get tutorial => isFa ? 'آموزش تکنیک‌ها' : 'Learn techniques';
   String get tutorialIntro => isFa
       ? 'هر تکنیک یک «قلق» منطقی برای پیشروی در پازل است. اینجا با مثال '

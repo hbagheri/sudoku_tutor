@@ -21,10 +21,111 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  bool _solvedDialogShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onControllerChanged);
+  }
+
+  void _onControllerChanged() {
+    if (!_solvedDialogShown && widget.controller.isSolved) {
+      _solvedDialogShown = true;
+      // Defer to the next frame so we don't try to show a dialog while
+      // mid-build.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _showSolvedDialog();
+      });
+    }
+  }
+
   @override
   void dispose() {
+    widget.controller.removeListener(_onControllerChanged);
     widget.controller.dispose();
     super.dispose();
+  }
+
+  void _showSolvedDialog() {
+    final s = context.strings;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        final theme = Theme.of(dialogCtx);
+        final c = widget.controller;
+        return AlertDialog(
+          icon: Icon(Icons.emoji_events,
+              size: 56, color: theme.colorScheme.primary),
+          title: Text(s.congrats, textAlign: TextAlign.center),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(s.solvedMessage, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              _ResultRow(label: s.difficulty, value: _difficultyLabel(s, c)),
+              _ResultRow(label: s.timer, value: _fmtDuration(c.elapsed)),
+              _ResultRow(label: s.mistakes, value: '${c.mistakes}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+                Navigator.of(context).pop();
+              },
+              child: Text(s.backToMenu),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+                _restartSameDifficulty();
+              },
+              child: Text(s.playAgain),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _restartSameDifficulty() {
+    // Pop the existing game screen and push a fresh one with the same
+    // difficulty. The home screen briefly shows, but never gets focus.
+    final diff = widget.controller.difficulty;
+    final autoNotes = widget.controller.autoNotes;
+    final persistence = widget.controller.persistence;
+    final fresh = GameController.newGame(
+      diff,
+      autoNotes: autoNotes,
+      persistence: persistence,
+    );
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (_) => GameScreen(
+        controller: fresh,
+        settings: widget.settings,
+      ),
+    ));
+  }
+
+  String _difficultyLabel(Strings s, GameController c) {
+    return switch (c.difficulty.name) {
+      'easy' => s.easy,
+      'medium' => s.medium,
+      'hard' => s.hard,
+      'expert' => s.expert,
+      'master' => s.master,
+      'legendary' => s.legendary,
+      _ => c.difficulty.name,
+    };
+  }
+
+  String _fmtDuration(Duration d) {
+    final m = d.inMinutes.toString().padLeft(2, '0');
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   @override
@@ -166,6 +267,29 @@ class _Stat extends StatelessWidget {
         Text(label, style: theme.textTheme.labelSmall),
         Text(value, style: theme.textTheme.titleMedium),
       ],
+    );
+  }
+}
+
+class _ResultRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _ResultRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: theme.textTheme.bodyMedium),
+          Text(value,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w700)),
+        ],
+      ),
     );
   }
 }
