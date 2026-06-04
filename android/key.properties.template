@@ -1,0 +1,7 @@
+# Template for android/key.properties — copy to android/key.properties and fill in.
+# DO NOT commit android/key.properties to git (it is gitignored).
+
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=upload
+storeFile=/absolute/path/to/sudoku_tutor_upload.jks
