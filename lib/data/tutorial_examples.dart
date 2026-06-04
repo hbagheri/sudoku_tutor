@@ -235,6 +235,17 @@ const List<TechniqueInfo> allTechniques = [
         'گزینه دارند و آن دو ستون یکی هستند، یک قفل ۲×۲ می‌سازند — آن عدد '
         'از باقی آن ستون‌ها حذف می‌شود.',
   ),
+  TechniqueInfo(
+    id: 'y_wing',
+    nameEn: 'Y-Wing',
+    nameFa: 'وای-وینگ',
+    difficulty: 10,
+    summaryEn: 'A bivalue pivot {A,B} and two bivalue wings {A,C} and {B,C} '
+        'that the pivot sees — any cell that sees both wings cannot be C.',
+    summaryFa: 'یک محور دومقداری {A,B} با دو بازوی دومقداری {A,C} و {B,C} '
+        'که محور هر دو را می‌بیند — هر خانه‌ای که هر دو بازو را می‌بیند '
+        'نمی‌تواند C باشد.',
+  ),
 ];
 
 /// Lightweight metadata for techniques that don't (yet) carry a worked

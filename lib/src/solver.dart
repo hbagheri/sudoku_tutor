@@ -8,6 +8,7 @@ import 'techniques/naked_subset.dart';
 import 'techniques/pointing.dart';
 import 'techniques/technique.dart';
 import 'techniques/x_wing.dart';
+import 'techniques/y_wing.dart';
 
 /// Coordinates a list of techniques, ordered by difficulty, to solve or
 /// hint a board.
@@ -30,6 +31,7 @@ class Solver {
               XWing(),
               NakedQuad(),
               HiddenQuad(),
+              YWing(),
             ];
 
   /// Returns the easiest hint available, or null if no technique applies.

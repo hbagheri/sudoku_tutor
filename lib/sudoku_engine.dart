@@ -16,3 +16,4 @@ export 'src/techniques/naked_subset.dart';
 export 'src/techniques/pointing.dart';
 export 'src/techniques/technique.dart';
 export 'src/techniques/x_wing.dart';
+export 'src/techniques/y_wing.dart';
