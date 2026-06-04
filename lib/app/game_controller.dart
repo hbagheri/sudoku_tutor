@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../sudoku_engine.dart';
+import 'game_persistence.dart';
 
 /// Central state for the currently-active game. Holds the board, the
 /// selected cell, undo history, the solver's current "teaching" hint, and
@@ -48,13 +49,34 @@ class GameController extends ChangeNotifier {
   /// the user manages pencil marks entirely on their own.
   bool autoNotes;
 
-  GameController.fromPuzzle(Puzzle puzzle, {this.autoNotes = true}) {
+  /// Optional persistence layer. When provided, the controller saves a
+  /// snapshot on every board-mutating action and clears it once the puzzle
+  /// is solved.
+  final GamePersistence? persistence;
+
+  GameController.fromPuzzle(
+    Puzzle puzzle, {
+    this.autoNotes = true,
+    this.persistence,
+  }) {
     _board = puzzle.initial.copy();
     _solution = puzzle.solution.copy();
     _difficulty = puzzle.difficulty;
     if (autoNotes) {
       _board.recomputeAllCandidates();
     }
+    _startTimer();
+    _persistSoon();
+  }
+
+  /// Restore a controller from a previously-saved game state.
+  GameController.fromSaved(SavedGame saved, {this.persistence})
+      : autoNotes = saved.autoNotes {
+    _board = _boardFromSaved(saved);
+    _solution = Board.fromString(saved.solutionCompact);
+    _difficulty = saved.difficulty;
+    _mistakes = saved.mistakes;
+    _elapsed = Duration(seconds: saved.elapsedSeconds);
     _startTimer();
   }
 
@@ -63,9 +85,14 @@ class GameController extends ChangeNotifier {
     Difficulty difficulty, {
     Random? random,
     bool autoNotes = true,
+    GamePersistence? persistence,
   }) {
     final puzzle = PuzzleGenerator(random: random).generate(difficulty);
-    return GameController.fromPuzzle(puzzle, autoNotes: autoNotes);
+    return GameController.fromPuzzle(
+      puzzle,
+      autoNotes: autoNotes,
+      persistence: persistence,
+    );
   }
 
   /// Flip the auto-notes flag. When turning on, also recompute candidates so
@@ -76,6 +103,7 @@ class GameController extends ChangeNotifier {
     autoNotes = v;
     if (v) _board.recomputeAllCandidates();
     notifyListeners();
+    _persistSoon();
   }
 
   // ------ Selection ------
@@ -122,6 +150,7 @@ class GameController extends ChangeNotifier {
     }
     _activeHint = null;
     notifyListeners();
+    _persistSoon();
   }
 
   /// Clear the value or all pencil marks of the selected cell (if not a given).
@@ -133,6 +162,7 @@ class GameController extends ChangeNotifier {
     cell.candidates.clear();
     _activeHint = null;
     notifyListeners();
+    _persistSoon();
   }
 
   /// Fill every empty cell's candidate set with its legal digits.
@@ -140,6 +170,7 @@ class GameController extends ChangeNotifier {
     _pushSnapshot();
     _board.recomputeAllCandidates();
     notifyListeners();
+    _persistSoon();
   }
 
   void undo() {
@@ -148,6 +179,7 @@ class GameController extends ChangeNotifier {
     snap.applyTo(_board);
     _activeHint = null;
     notifyListeners();
+    _persistSoon();
   }
 
   // ------ Teaching ------
@@ -169,6 +201,7 @@ class GameController extends ChangeNotifier {
     applyHint(_board, hint);
     _activeHint = null;
     notifyListeners();
+    _persistSoon();
   }
 
   /// One-shot: find the next hint and apply it immediately. Returns true if a
@@ -180,6 +213,7 @@ class GameController extends ChangeNotifier {
     applyHint(_board, hint);
     _activeHint = hint;
     notifyListeners();
+    _persistSoon();
     return true;
   }
 
@@ -192,10 +226,15 @@ class GameController extends ChangeNotifier {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (isSolved) {
         _timer?.cancel();
+        // Final solve — drop the saved game so "Continue" disappears.
+        unawaited(persistence?.clear() ?? Future<void>.value());
         return;
       }
       _elapsed += const Duration(seconds: 1);
       notifyListeners();
+      // Persist the timer roughly every 10 seconds so a reopen restores a
+      // close-to-accurate elapsed time without writing every second.
+      if (_elapsed.inSeconds % 10 == 0) _persistSoon();
     });
   }
 
@@ -218,6 +257,55 @@ class GameController extends ChangeNotifier {
       _undoStack.removeAt(0);
     }
     _undoStack.add(_Snapshot.of(_board));
+  }
+
+  // ------ Persistence ------
+
+  /// Build a serializable snapshot of the current game state.
+  SavedGame toSavedGame() {
+    final givens = StringBuffer();
+    final values = StringBuffer();
+    final cands = <List<int>>[];
+    for (final cell in _board.allCells) {
+      givens.write(cell.isGiven ? (cell.value ?? 0) : 0);
+      values.write(cell.value ?? 0);
+      cands.add((cell.candidates.toList()..sort()));
+    }
+    return SavedGame(
+      difficulty: _difficulty,
+      solutionCompact: _solution.toCompactString(),
+      givensCompact: givens.toString(),
+      valuesCompact: values.toString(),
+      candidates: cands,
+      mistakes: _mistakes,
+      elapsedSeconds: _elapsed.inSeconds,
+      autoNotes: autoNotes,
+      savedAt: DateTime.now(),
+    );
+  }
+
+  void _persistSoon() {
+    final p = persistence;
+    if (p == null) return;
+    // Fire-and-forget — saving is fast and we don't block the UI on it.
+    unawaited(p.save(toSavedGame()));
+  }
+
+  static Board _boardFromSaved(SavedGame saved) {
+    final board = Board.empty();
+    for (var i = 0; i < 81; i++) {
+      final r = i ~/ 9;
+      final c = i % 9;
+      final cell = board.at(r, c);
+      final givenCh = saved.givensCompact[i];
+      final valueCh = saved.valuesCompact[i];
+      final givenDigit = int.tryParse(givenCh) ?? 0;
+      final valueDigit = int.tryParse(valueCh) ?? 0;
+      if (valueDigit != 0) cell.value = valueDigit;
+      cell.isGiven = givenDigit != 0;
+      cell.candidates = saved.candidates[i].toSet();
+    }
+    return board;
   }
 }
 

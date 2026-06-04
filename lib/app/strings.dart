@@ -32,6 +32,7 @@ class Strings {
 
   String get newGame => isFa ? 'بازی جدید' : 'New Game';
   String get continueGame => isFa ? 'ادامه بازی' : 'Continue';
+  String get discardSavedGame => isFa ? 'صرف نظر و شروع جدید' : 'Discard';
   String get settings => isFa ? 'تنظیمات' : 'Settings';
   String get stats => isFa ? 'آمار' : 'Stats';
 
