@@ -16,114 +16,221 @@ class TechniqueExample {
 
 /// Build the curated list of examples shown in the tutorial screen.
 ///
-/// Each entry sets up a minimal board state, runs the technique on it, and
-/// captures the resulting hint. Techniques that don't have a hand-crafted
-/// example here fall back to a text-only entry in the UI.
+/// All 14 boards below were captured by walking a single Legendary-difficulty
+/// puzzle (seed 1 from `tool/extract_examples.dart`) and recording the first
+/// state at which each technique naturally fires. That keeps the examples
+/// honest — they are positions the solver itself actually reaches — and
+/// removes the need to hand-craft contrived boards.
 List<TechniqueExample> buildTechniqueExamples() {
   final list = <TechniqueExample>[];
 
-  // ---- Naked Single ----
+  // ---- naked_single (seed=1, step=3) ----
   {
-    final b = Board.empty();
-    for (var c = 1; c <= 8; c++) {
-      b.at(0, c).value = c + 1;
-    }
-    b.recomputeAllCandidates();
-    final t = NakedSingle();
-    final h = t.findOne(b);
-    if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
+    final b = _restore(
+      '060000040018700006200000039800005900006090300390007080080024007634000890050000000',
+      _cands1Step3,
+    );
+    _capture(list, 'naked_single', b);
   }
 
-  // ---- Hidden Single ----
+  // ---- hidden_single (seed=1, step=0) ----
   {
-    final b = Board.empty();
-    b.at(1, 3).value = 5;
-    b.at(2, 7).value = 5;
-    b.at(5, 1).value = 5;
-    b.at(6, 2).value = 5;
-    b.recomputeAllCandidates();
-    final t = HiddenSingle();
-    final h = t.findOne(b);
-    if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'hidden_single', b);
   }
 
-  // ---- Pointing ----
+  // ---- pointing (seed=1, step=0) ----
   {
-    final b = Board.empty();
-    b.at(1, 0).value = 1;
-    b.at(1, 1).value = 2;
-    b.at(1, 2).value = 3;
-    b.at(2, 0).value = 4;
-    b.at(2, 1).value = 5;
-    b.at(2, 2).value = 6;
-    b.recomputeAllCandidates();
-    final t = Pointing();
-    final h = t.findOne(b);
-    if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'pointing', b);
   }
 
-  // ---- Box-Line Reduction ----
+  // ---- box_line (seed=1, step=0) ----
   {
-    final b = Board.empty();
-    b.at(0, 3).value = 1;
-    b.at(0, 4).value = 2;
-    b.at(0, 5).value = 3;
-    b.at(0, 6).value = 4;
-    b.at(0, 7).value = 5;
-    b.at(0, 8).value = 6;
-    b.recomputeAllCandidates();
-    final t = BoxLine();
-    final h = t.findOne(b);
-    if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'box_line', b);
   }
 
-  // ---- Naked Pair ----
+  // ---- naked_pair (seed=1, step=0) ----
   {
-    final b = Board.empty();
-    // Row 0 cols 2..6 filled with 3..7; (1,1)=8 and (2,2)=9 lock 8 and 9 out
-    // of (0,0) and (0,1) via box 0. Those two cells end up sharing exactly
-    // {1, 2}, and the technique strips 1, 2 from (0,7) and (0,8).
-    b.at(0, 2).value = 3;
-    b.at(0, 3).value = 4;
-    b.at(0, 4).value = 5;
-    b.at(0, 5).value = 6;
-    b.at(0, 6).value = 7;
-    b.at(1, 1).value = 8;
-    b.at(2, 2).value = 9;
-    b.recomputeAllCandidates();
-    final t = NakedPair();
-    final h = t.findOne(b);
-    if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'naked_pair', b);
   }
 
-  // ---- Hidden Pair ----
+  // ---- hidden_pair (seed=1, step=0) ----
   {
-    final b = Board.empty();
-    // Box 0 receives no 1s or 2s, but every box-0 cell *except* (0,0) and
-    // (0,1) gets 1 or 2 blocked from its row or column. The result: in box
-    // 0, digits 1 and 2 can only live in those two cells, so any other
-    // candidates currently in them can be eliminated.
-    b.at(1, 5).value = 1;
-    b.at(1, 6).value = 2;
-    b.at(2, 4).value = 2;
-    b.at(2, 8).value = 1;
-    b.at(3, 2).value = 1;
-    b.at(4, 2).value = 2;
-    b.recomputeAllCandidates();
-    final t = HiddenPair();
-    final h = t.findOne(b);
-    if (h != null) list.add(TechniqueExample(technique: t, board: b, hint: h));
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'hidden_pair', b);
   }
 
-  // Triples, Quads, and X-Wing need denser board states to demonstrate;
-  // they are documented textually in `allTechniques` for now and surface
-  // their full explanation when the user hits them in a real game.
+  // ---- naked_triple (seed=1, step=0) ----
+  {
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'naked_triple', b);
+  }
+
+  // ---- hidden_triple (seed=1, step=0) ----
+  {
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'hidden_triple', b);
+  }
+
+  // ---- naked_quad (seed=1, step=0) ----
+  {
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'naked_quad', b);
+  }
+
+  // ---- hidden_quad (seed=1, step=3) ----
+  {
+    final b = _restore(
+      '060000040018700006200000039800005900006090300390007080080024007634000890050000000',
+      _cands1Step3,
+    );
+    _capture(list, 'hidden_quad', b);
+  }
+
+  // ---- swordfish (seed=1, step=0) ----
+  {
+    final b = _restore(_givens1Step0, _cands1Step0);
+    _capture(list, 'swordfish', b);
+  }
+
+  // ---- x_wing (seed=1, step=10) ----
+  {
+    final b = _restore(
+      '060000040018703006200000039800035900006090300390007080080324007634571892050000000',
+      _cands1Step10,
+    );
+    _capture(list, 'x_wing', b);
+  }
+
+  // ---- y_wing (seed=1, step=17) ----
+  {
+    final b = _restore(
+      '563000040918703006207000039800035900006090300390007080189324007634571892750000000',
+      _cands1Step17,
+    );
+    _capture(list, 'y_wing', b);
+  }
+
+  // ---- unique_rectangle (seed=1, step=27) ----
+  {
+    final b = _restore(
+      '563010048918703006247000039801035904406090305395007081189324007634571892752000000',
+      _cands1Step27,
+    );
+    _capture(list, 'unique_rectangle', b);
+  }
 
   return list;
 }
 
+void _capture(List<TechniqueExample> list, String id, Board b) {
+  final t = _techniqueById(id);
+  if (t == null) return;
+  final h = t.findOne(b);
+  if (h == null) return;
+  list.add(TechniqueExample(technique: t, board: b, hint: h));
+}
+
+Technique? _techniqueById(String id) {
+  for (final t in Solver().techniques) {
+    if (t.id == id) return t;
+  }
+  return null;
+}
+
+/// Build a Board from an 81-character compact value string (0 for empty)
+/// plus a list of 81 candidate digit lists (one per cell).
+Board _restore(String values, List<List<int>> candidates) {
+  assert(values.length == 81);
+  assert(candidates.length == 81);
+  final b = Board.empty();
+  for (var i = 0; i < 81; i++) {
+    final r = i ~/ 9;
+    final c = i % 9;
+    final cell = b.at(r, c);
+    final v = int.tryParse(values[i]) ?? 0;
+    if (v != 0) {
+      cell.value = v;
+      cell.isGiven = true;
+    } else {
+      cell.candidates = candidates[i].toSet();
+    }
+  }
+  return b;
+}
+
+// ============================================================================
+// Captured board candidate states from `tool/extract_examples.dart` (seed=1).
+// Each entry is a list of 81 digit lists — empty for placed cells.
+// ============================================================================
+
+const String _givens1Step0 =
+    '060000040018700006200000039800005000006090300390007080000024007604000890050000000';
+
+const List<List<int>> _cands1Step0 = [
+  [5,7,9],[],[3,5,7,9],[1,2,3,5,8,9],[1,3,5,8],[1,2,3,8,9],[1,2,5,7],[],[1,2,5,8],
+  [4,5,9],[],[],[],[3,4,5],[2,3,9],[2,5],[2,5],[],
+  [],[4,7],[5,7],[1,4,5,6,8],[1,4,5,6,8],[1,6,8],[1,5,7],[],[],
+  [],[2,4,7],[1,2,7],[1,2,3,4,6],[1,3,4,6],[],[1,2,4,6,7,9],[1,2,6,7],[1,2,4],
+  [1,4,5,7],[2,4,7],[],[1,2,4,8],[],[1,2,8],[],[1,2,5,7],[1,2,4,5],
+  [],[],[1,2,5],[1,2,4,6],[1,4,6],[],[1,2,4,5,6],[],[1,2,4,5],
+  [1,9],[3,8],[1,3,9],[1,3,5,6,8,9],[],[],[1,5,6],[1,5,6],[],
+  [],[2,3,7],[],[1,3,5],[1,3,5,7],[1,3],[],[],[1,2,3,5],
+  [1,7,9],[],[1,2,3,7,9],[1,3,6,8,9],[1,3,6,7,8],[1,3,6,8,9],[1,2,4,6],[1,2,6],[1,2,3,4],
+];
+
+const List<List<int>> _cands1Step3 = [
+  [5,7,9],[],[3,5,7,9],[1,2,3,5,8,9],[1,3,5,8],[1,2,3,8,9],[1,2,5,7],[],[1,2,5,8],
+  [4,5,9],[],[],[],[3,4,5],[2,3,9],[2,5],[2,5],[],
+  [],[4,7],[5,7],[1,4,5,6,8],[1,4,5,6,8],[1,6,8],[1,5,7],[],[],
+  [],[2,4,7],[1,2,7],[1,2,3,4,6],[1,3,4,6],[],[],[1,2,6,7],[1,2,4],
+  [1,4,5,7],[2,4,7],[],[1,2,4,8],[],[1,2,8],[],[1,2,5,7],[1,2,4,5],
+  [],[],[1,2,5],[1,2,4,6],[1,4,6],[],[1,2,4,5,6],[],[1,2,4,5],
+  [1,9],[],[1,9],[1,3,5,6,9],[],[],[1,5,6],[1,5,6],[],
+  [],[],[],[1,5],[1,5,7],[1],[],[],[1,2,5],
+  [1,7,9],[],[1,2,7,9],[1,3,6,8,9],[1,3,6,7,8],[1,3,6,8,9],[1,2,4,6],[1,2,6],[1,2,3,4],
+];
+
+const List<List<int>> _cands1Step10 = [
+  [5,7,9],[],[3,5,7,9],[1,2,8,9],[1,5,8],[2,8,9],[1,2,5,7],[],[1,5,8],
+  [4,5,9],[],[],[],[4,5],[],[2,5],[2,5],[],
+  [],[4,7],[5,7],[1,4,6,8],[1,4,5,6,8],[6,8],[1,5,7],[],[],
+  [],[2,4,7],[1,2,7],[1,2,4,6],[],[],[],[1,2,6,7],[1,4],
+  [1,4,5,7],[2,4,7],[],[1,2,4,8],[],[2,8],[],[1,2,5,7],[1,4,5],
+  [],[],[1,2,5],[1,2,4,6],[1,4,6],[],[1,2,4,5,6],[],[1,4,5],
+  [1,9],[],[1,9],[],[],[],[1,5,6],[1,5,6],[],
+  [],[],[],[],[],[],[],[],[],
+  [1,7,9],[],[1,2,7,9],[6,8,9],[6,8],[6,8,9],[1,4,6],[1,6],[1,3,4],
+];
+
+const List<List<int>> _cands1Step17 = [
+  [],[],[],[1,2,8,9],[1,8],[2,8,9],[1,2,7],[],[1,8],
+  [],[],[],[],[4,5],[],[2,5],[2,5],[],
+  [],[4],[],[1,4,6,8],[1,4,5,6,8],[6,8],[1,5],[],[],
+  [],[2,4,7],[1,2],[1,2,4,6],[],[],[],[1,2,6,7],[1,4],
+  [4],[2,4,7],[],[1,2,4,8],[],[2,8],[],[1,2,5,7],[1,4,5],
+  [],[],[1,2,5],[1,2,4,6],[1,4,6],[],[1,2,4,5,6],[],[1,4,5],
+  [],[],[],[],[],[],[5,6],[5,6],[],
+  [],[],[],[],[],[],[],[],[],
+  [],[],[2],[6,8,9],[6,8],[6,8,9],[1,4,6],[1,6],[1,3,4],
+];
+
+const List<List<int>> _cands1Step27 = [
+  [],[],[],[2,9],[],[2,9],[2,7],[],[],
+  [],[],[],[],[4,5],[],[2,5],[2,5],[],
+  [],[],[],[6,8],[5,6,8],[6,8],[1,5],[],[],
+  [],[2,7],[],[2,6],[],[],[],[2,6,7],[],
+  [],[2,7],[],[1,2,8],[],[2,8],[],[2,7],[],
+  [],[],[],[2,4,6],[4,6],[],[2,6],[],[],
+  [],[],[],[],[],[],[5,6],[5,6],[],
+  [],[],[],[],[],[],[],[],[],
+  [],[],[],[6,8,9],[6,8],[6,8,9],[1,4,6],[1,6],[3],
+];
+
 /// The full list of techniques, in difficulty order, with display metadata.
-/// Includes techniques that don't yet have a visual example.
 const List<TechniqueInfo> allTechniques = [
   TechniqueInfo(
     id: 'naked_single',

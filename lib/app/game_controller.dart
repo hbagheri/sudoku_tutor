@@ -144,9 +144,11 @@ class GameController extends ChangeNotifier {
       }
       cell.value = digit;
       cell.candidates.clear();
-      if (autoNotes) {
-        _propagatePeerCandidates(cell, digit);
-      }
+      // Always propagate to peers' pencil-marks. If the user has notes —
+      // either typed by hand or auto-filled — the digit they just placed
+      // can no longer legally appear in the same row, column, or box, so
+      // strip it from those notes without waiting for a manual cleanup.
+      _propagatePeerCandidates(cell, digit);
     }
     _activeHint = null;
     notifyListeners();

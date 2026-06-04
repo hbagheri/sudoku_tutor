@@ -38,6 +38,32 @@ class Solver {
               UniqueRectangle(),
             ];
 
+  /// Return EVERY hint that any of the configured techniques can produce
+  /// on the *current* board state. Useful for building tutorial galleries
+  /// or "show me all available moves" UIs.
+  ///
+  /// Does not mutate the board (techniques run independently on the same
+  /// candidate state). The implicit step-0 candidate fill applies here as
+  /// well — if the board has no pencil-marks at all yet, they are filled
+  /// before the scan so the techniques have something to work with.
+  List<Hint> findAllHints(Board board) {
+    var anyCandidates = false;
+    for (final cell in board.allCells) {
+      if (cell.value == null && cell.candidates.isNotEmpty) {
+        anyCandidates = true;
+        break;
+      }
+    }
+    if (!anyCandidates) {
+      board.recomputeAllCandidates();
+    }
+    final hints = <Hint>[];
+    for (final t in techniques) {
+      hints.addAll(t.findAll(board));
+    }
+    return hints;
+  }
+
   /// Returns the easiest hint available, or null if no technique applies.
   ///
   /// By default, the board's existing candidate state is respected — so
