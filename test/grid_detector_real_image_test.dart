@@ -13,7 +13,7 @@ import 'package:sudoku_tutor/app/grid_detector.dart';
 
 void main() {
   test('detect on real cropped image', () async {
-    const path = '/tmp/sudoku_test/latest_cropped.jpg';
+    const path = '/tmp/sudoku_test/new_puzzle.jpg';
     if (!File(path).existsSync()) {
       print('Skipping: no test image at $path');
       return;

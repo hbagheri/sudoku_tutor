@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../app/game_controller.dart';
@@ -24,11 +26,41 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   bool _solvedDialogShown = false;
   final _statsRepo = StatsRepository();
+  Timer? _autoSolveTimer;
 
   @override
   void initState() {
     super.initState();
     widget.controller.addListener(_onControllerChanged);
+  }
+
+  void _toggleAutoSolve() {
+    if (_autoSolveTimer != null) {
+      _autoSolveTimer!.cancel();
+      setState(() => _autoSolveTimer = null);
+      return;
+    }
+    setState(() {
+      _autoSolveTimer = Timer.periodic(
+        const Duration(milliseconds: 220),
+        (timer) {
+          if (widget.controller.isSolved) {
+            timer.cancel();
+            setState(() => _autoSolveTimer = null);
+            return;
+          }
+          if (!widget.controller.takeOneStep()) {
+            timer.cancel();
+            setState(() => _autoSolveTimer = null);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(context.strings.noHintsLeft)),
+              );
+            }
+          }
+        },
+      );
+    });
   }
 
   void _onControllerChanged() {
@@ -51,6 +83,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
+    _autoSolveTimer?.cancel();
     widget.controller.removeListener(_onControllerChanged);
     widget.controller.dispose();
     super.dispose();
@@ -174,14 +207,25 @@ class _GameScreenState extends State<GameScreen> {
           ),
           IconButton(
             tooltip: s.nextStep,
-            onPressed: () {
-              if (!widget.controller.takeOneStep()) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(s.noHintsLeft)),
-                );
-              }
-            },
+            onPressed: _autoSolveTimer != null
+                ? null
+                : () {
+                    if (!widget.controller.takeOneStep()) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(s.noHintsLeft)),
+                      );
+                    }
+                  },
             icon: const Icon(Icons.skip_next),
+          ),
+          IconButton(
+            tooltip: s.autoSolve,
+            onPressed: _toggleAutoSolve,
+            icon: Icon(
+              _autoSolveTimer != null
+                  ? Icons.stop_circle_outlined
+                  : Icons.fast_forward,
+            ),
           ),
         ],
       ),
