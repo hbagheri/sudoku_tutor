@@ -15,6 +15,7 @@ enum Difficulty {
   expert,
   master,
   legendary,
+  custom,
 }
 
 class DifficultySpec {
@@ -58,6 +59,14 @@ const Map<Difficulty, DifficultySpec> kDifficultySpecs = {
     maxTechniqueDifficulty: 9, // + X-Wing.
     minClues: 22,
     targetMaxClues: 25,
+  ),
+  // Custom puzzles are user-entered, not generated. The spec exists so
+  // the map is exhaustive; generate() should not be called with this
+  // difficulty.
+  Difficulty.custom: DifficultySpec(
+    maxTechniqueDifficulty: 14,
+    minClues: 17,
+    targetMaxClues: 81,
   ),
 };
 

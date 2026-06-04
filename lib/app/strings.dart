@@ -96,6 +96,28 @@ class Strings {
       : 'Are you sure? All stats will be cleared.';
   String get cancel => isFa ? 'انصراف' : 'Cancel';
   String get yes => isFa ? 'بله' : 'Yes';
+
+  // ---- Custom puzzle ----
+  String get custom => isFa ? 'سفارشی' : 'Custom';
+  String get enterCustomPuzzle =>
+      isFa ? 'وارد کردن پازل دستی' : 'Enter a custom puzzle';
+  String get customPuzzleIntro => isFa
+      ? 'یک پازل از روزنامه یا مجله را خانه به خانه وارد کنید. وقتی '
+        'پازل معتبر شد، دکمه‌ی «شروع بازی» فعال می‌شود.'
+      : 'Tap a cell and type the digit shown in the magazine or newspaper. '
+        'When the puzzle is valid, "Start playing" lights up.';
+  String get clues => isFa ? 'سرنخ' : 'clues';
+  String get startPlaying => isFa ? 'شروع بازی' : 'Start playing';
+  String get clearAll => isFa ? 'پاک کردن همه' : 'Clear all';
+  String get statusEmpty => isFa ? 'هنوز سرنخی وارد نکرده‌اید' : 'No clues yet';
+  String get statusInvalid =>
+      isFa ? 'تکراری در سطر، ستون یا مربع' : 'Duplicate in a row/column/box';
+  String get statusNoSolution =>
+      isFa ? 'این پازل جواب ندارد' : 'No solution exists';
+  String get statusMultipleSolutions =>
+      isFa ? 'چند جواب دارد — سرنخ بیشتری اضافه کنید' : 'Multiple solutions — add more clues';
+  String get statusValid => isFa ? 'پازل معتبر است' : 'Puzzle is valid';
+  String get checking => isFa ? 'در حال بررسی…' : 'Checking…';
   String get tutorial => isFa ? 'آموزش تکنیک‌ها' : 'Learn techniques';
   String get tutorialIntro => isFa
       ? 'هر تکنیک یک «قلق» منطقی برای پیشروی در پازل است. اینجا با مثال '

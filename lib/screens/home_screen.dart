@@ -5,6 +5,7 @@ import '../app/game_persistence.dart';
 import '../app/settings.dart';
 import '../app/strings.dart';
 import '../sudoku_engine.dart';
+import 'custom_puzzle_screen.dart';
 import 'game_screen.dart';
 import 'stats_screen.dart';
 import 'tutorial_screen.dart';
@@ -111,6 +112,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(s.pickDifficulty, style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 12),
                   ..._buildDifficultyButtons(context, s),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.edit_note),
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => CustomPuzzleScreen(
+                            settings: widget.settings,
+                          ),
+                        )).then((_) => _refreshSaved());
+                      },
+                      label: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Text(s.enterCustomPuzzle),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -262,6 +281,7 @@ class _ContinueCard extends StatelessWidget {
       'expert' => s.expert,
       'master' => s.master,
       'legendary' => s.legendary,
+      'custom' => s.custom,
       _ => saved.difficulty.name,
     };
     final m = (saved.elapsedSeconds ~/ 60).toString().padLeft(2, '0');

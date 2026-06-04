@@ -126,6 +126,7 @@ class _GameScreenState extends State<GameScreen> {
       'expert' => s.expert,
       'master' => s.master,
       'legendary' => s.legendary,
+      'custom' => s.custom,
       _ => c.difficulty.name,
     };
   }
@@ -249,6 +250,7 @@ class _StatsBar extends StatelessWidget {
       'expert' => s.expert,
       'master' => s.master,
       'legendary' => s.legendary,
+      'custom' => s.custom,
       _ => c.difficulty.name,
     };
   }

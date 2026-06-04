@@ -155,6 +155,7 @@ class _DifficultyCard extends StatelessWidget {
       'expert' => s.expert,
       'master' => s.master,
       'legendary' => s.legendary,
+      'custom' => s.custom,
       _ => difficulty.name,
     };
     final avg = stats.completed > 0
